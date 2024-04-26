@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>图书信息管理</title>
+    <link href="../css/index.css" rel="stylesheet" type="text/css">
+    <script src="../js/jquery-3.4.1.js"></script>
+
+    <script>
+        $(function () {
+            $.post("/allbooks", function (result) {
+                $.each(result, function (key, value) {
+                    var id = value.id;
+                    var tr = "<tr>";
+                    tr += "<td><div id='id'>" + id + "</div></td>";
+                    tr += "<td><div>" + value.title + "</div><input type='text' name='title' value=" + value.title + " size='60' hidden></td>";
+                    tr += "<td><div>" + value.author + "</div><input type='text' name='author' value=" + value.author + " size='5' hidden></td>";
+                    tr += "<td><div>" + value.press + "</div><input type='text' name='press' value=" + value.press + " size='20' hidden></td>";
+                    tr += "<td><div>" + value.price + "</div><input type='text' name='price' value=" + value.price + " size='4' hidden></td>";
+                    tr += "<td><a href='javascript:void(0)' onclick='updateBook(this)'>修改</a><input type='button' value='修改' id='b" + id + "' onclick='update(this)' hidden></td>";
+                    tr += "<td><a href='javascript:void(0)' onclick='deleteBook(this)'>删除</a></td>";
+                    tr += "</tr>";
+                    $("#tab").append(tr);
+                });
+            });
+        });
+
+        function updateBook(obj) {
+            $(obj).parents("table").find("input").hide();
+            $(obj).parents("table").find("div,a").show();
+            $(obj).parents("tr").find("div").hide();
+            $(obj).parents("tr").find("#id").show();
+            $(obj).hide();
+            $(obj).parents("tr").find("input").show();
+        }
+
+        function update(btn) {
+            var id = $(btn).attr("id").substr(1);
+            var title = $(btn).parents("tr").find("input[name='title']").val().trim();
+            var author = $(btn).parents("tr").find("input[name='author']").val().trim();
+            var press = $(btn).parents("tr").find("input[name='press']").val().trim();
+            var price = $(btn).parents("tr").find("input[name='price']").val().trim();
+            $(btn).parents("tr").find("td:eq(1) div").text(title);
+            $(btn).parents("tr").find("td:eq(2) div").text(author);
+            $(btn).parents("tr").find("td:eq(3) div").text(press);
+            $(btn).parents("tr").find("td:eq(4) div").text(price);
+            $.post("updateBook", {
+                "id": id,
+                "title": title,
+                "author": author,
+                "press": press,
+                "price": price
+            }, function (result) {
+                if (result == "修改成功") {
+                    $(btn).parents("table").find("input").hide();
+                    $(btn).parents("table").find("div,a").show();
+                }
+            })
+        }
+
+        function deleteBook(btn) {
+            var id = $(btn).parents("tr").find("#id").text();
+            $.post("deleteBook", {"id": id}, function (result) {
+                if (result == "删除成功") {
+                    $(btn).parents("tr").remove();
+                }
+            });
+        }
+
+        function add() {
+            $("#add-panel").show().css({"left": ($(window).width() / 2 - 200)});
+        }
+
+        function closeBook() {
+            $("#add-panel").hide();
+        }
+
+        function saveBook() {
+            var title = $("#add-panel").find("input[name='title']").val().trim();
+            var author = $("#add-panel").find("input[name='author']").val().trim();
+            var press = $("#add-panel").find("input[name='press']").val().trim();
+            var price = $("#add-panel").find("input[name='price']").val().trim();
+
+            $.post("insertBook", {
+                "title": title,
+                "author": author,
+                "press": press,
+                "price": price
+            }, function (result) {
+                if (result == "添加成功") {
+                    $("#add-panel").hide();
+                    window.location.href = "index";
+                }
+            })
+        }
+    </script>
+</head>
+<body>
+<a href="javascript:add()">添加图书</a>
+<div id="div1"></div>
+<table id="tab" style='width:990px;border-width:1px;border-style:dotted;font-size:14px;border-color:red;'>
+    <caption><b>教材信息</b></caption>
+    <tr style='border-width:1px;border-style:dotted;'>
+        <th>id</th>
+        <th>书名</th>
+        <th>作者</th>
+        <th>出版社</th>
+        <th>价格</th>
+        <th>修改</th>
+        <th>删除</th>
+    </tr>
+</table>
+<div id="add-panel">
+    <div>&nbsp;</div>
+    <table style='width:400px;border-width:1px;border-style:dotted;font-size:14px;border-color:red;'>
+        <caption><b>添加图书</b></caption>
+        <tr style="border-width:1px;border-style:dotted;">
+            <td>书名</td>
+            <td><input type="text" name="title" value="PHP从入门到精通"></td>
+        </tr>
+        <tr style="border-width:1px;border-style:dotted;">
+            <td>作者</td>
+            <td><input type="text" name="author" value="潘凯华"></td>
+        </tr>
+        <tr style="border-width:1px;border-style:dotted;">
+            <td>出版社</td>
+            <td><input type="text" name="press" value="清华大学出版社"></td>
+        </tr>
+        <tr style="border-width:1px;border-style:dotted;">
+            <td>价格</td>
+            <td><input type="text" name="price" value="69.8"></td>
+        </tr>
+        <tr style="border-width:1px;border-style:dotted;">
+            <td colspan="2" align="center">
+                <button id="add-btn" onclick="javascript:saveBook()">保存</button>
+                <button id="close-btn" onclick="javascript:closeBook()">关闭</button>
+            </td>
+        </tr>
+    </table>
+</div>
+</body>
+</html>
